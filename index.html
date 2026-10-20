@@ -65,8 +65,8 @@
   #stage { position: absolute; left: 50px; top: 0; width: 1320px; height: 1080px; padding: 110px 30px 90px; z-index: 5; display: flex; flex-wrap: wrap; align-content: center; justify-content: center; gap: 18px 26px; }
   .card { position: relative; width: var(--card); display: flex; flex-direction: column; align-items: center; cursor: pointer; animation: cardIn .9s var(--spring) both; transition: width .5s; --tc: var(--navy); }
   .card.gone { animation: cardOut .4s ease-in both; }
-  .card .pic { position: relative; width: 100%; aspect-ratio: 1 / .92; display: flex; align-items: flex-end; justify-content: center; }
-  .card .pic img { max-width: 100%; max-height: 100%; display: block; filter: drop-shadow(0 12px 12px rgba(50, 35, 10, .18)); }
+  .card .pic { position: relative; width: 100%; height: calc(var(--card) * .92); display: flex; align-items: flex-end; justify-content: center; }
+  .card .pic img { max-width: 100%; max-height: 100%; width: auto; height: auto; display: block; filter: drop-shadow(0 12px 12px rgba(50, 35, 10, .18)); }
   .card .pic::after { content: ''; position: absolute; left: 12%; right: 12%; bottom: -8px; height: 30px; z-index: -1;
     background: radial-gradient(50% 50% at 50% 50%, rgba(60, 40, 10, .28), transparent 70%); }
   .card .say { margin-top: 10px; max-width: 100%; padding: 6px 18px 8px; background: #fff; border-radius: 22px; box-shadow: 0 8px 18px rgba(15, 60, 90, .12);
@@ -74,6 +74,7 @@
   .card .say::before { content: ''; position: absolute; top: -10px; left: 50%; translate: -50% 0; border: 10px solid transparent; border-top: 0; border-bottom-color: #fff; }
   .card .nm { margin-top: 6px; font: 500 calc(var(--card) * .045) 'Tamlil'; color: var(--ink2); letter-spacing: .04em; }
   .card .tag { position: absolute; top: 4%; right: 2%; padding: 3px 12px; border-radius: 20px; background: var(--tc); color: #fff; font: 700 calc(var(--card) * .04) 'Tamlil'; box-shadow: 0 6px 14px rgba(0, 0, 0, .15); }
+  .card .brand { position: absolute; top: 4%; left: 2%; padding: 3px 10px; border-radius: 20px; background: #fff; color: var(--ink2); font: 500 calc(var(--card) * .034) 'Tamlil'; box-shadow: 0 4px 10px rgba(15, 60, 90, .12); }
   .card.hop img { animation: hop .9s ease-out; }
   /* הטקסט על השלט של איור "חזון" */
   .card .sign, .hero-wrap .sign { position: absolute; display: flex; align-items: center; justify-content: center; text-align: center; padding: 1% 3%; font-family: 'Shirbut'; color: var(--ink); line-height: 1.02; overflow: hidden; }
@@ -180,7 +181,7 @@
       <div class="topic"></div>
       <blockquote></blockquote>
       <div class="who"></div>
-      <div class="role">צוות הגרפיקה · רשת חינוך חב״ד</div>
+      <div class="role"><span class="brandline"></span> · צוות הגרפיקה · רשת חינוך חב״ד</div>
     </div>
     <div class="progress"><i></i></div>
   </section>
@@ -200,20 +201,45 @@ const $ = (s, el = document) => el.querySelector(s);
 const app = $('#app');
 const IMG = 'https://ea649.github.io/shalhevet-games/vision/images/web/';
 const scene = id => `${IMG}scenes/${id}-g.png`;
+const sceneB = id => `${IMG}scenes/${id}-b.png`;
+const item = n => `${IMG}items/${n}.png`;
 
-// ---------- הנושאים: לכל נושא איור של בנות שלהבות, צבע ומילות מפתח ----------
+// ---------- המותגים: לכל מותג ברשת סגנון איור משלו ----------
+const BRANDS = {
+  shg: { label: 'שלהבות · בנות' }, shb: { label: 'שלהבות · בנים' },
+  bc: { label: 'בית חינוך חב״ד' }, gan: { label: 'גני חב״ד לקטנטנים' }, net: { label: 'שלהבות' },
+};
+// דמויות משותפות (לא תלויות נושא)
+const GAN = [{ b: 'gan', src: 'img/gan-pair.png' }, { b: 'gan', src: 'img/gan-girl.png' }, { b: 'gan', src: 'img/gan-boy.png' }];
+const BC = { backpack: { b: 'bc', src: 'img/bc-girl-backpack.webp' }, idea: { b: 'bc', src: 'img/bc-girl-idea.webp' },
+  detective: { b: 'bc', src: 'img/bc-boy-detective.webp' }, teacher: { b: 'bc', src: 'img/bc-teacher.webp' } };
+const NET = n => ({ b: 'net', src: item(n) });
+const SH = id => [{ b: 'shg', src: scene(id) }, { b: 'shb', src: sceneB(id) }];
+
+// ---------- הנושאים: צבע, מילות מפתח, ודמויות מכל הסגנונות ----------
 const TOPICS = [
-  { id: 'joy', label: 'שמחה', color: '#FBB616', keys: ['שמח', 'שמחה', 'חיוך', 'לחייך', 'מחייכ', 'כיף', 'אושר', 'חגיג', 'צהל', 'מצחיק', 'הנאה', 'ליהנות'], fl: ['🎈', '✦', '★'] },
-  { id: 'mivtzaim', label: 'שליחות ואור', color: '#A84A9C', keys: ['שליחות', 'שליח', 'להאיר', 'האיר', 'מאיר', 'מאירה', 'אור', 'הרבי', 'קדוש', 'מצו', 'ברכה', 'חסיד', 'גאולה', 'משיח', 'להפיץ', 'הפצה', 'מעיינות', 'תורה', 'יהדות', 'ה\'', 'השם', 'קודש'], fl: ['✦', '★', '✧'] },
-  { id: 'art', label: 'יופי ויצירה', color: '#EE2E5D', keys: ['יפה', 'יופי', 'אסתטי', 'עיצוב', 'לעצב', 'מעצב', 'יצירת', 'יצירה', 'ליצור', 'השראה', 'אמנות', 'אומנות', 'רעיון', 'דמיון', 'צבע', 'צבעוני', 'אסטטי', 'יוצר'], fl: ['🎨', '✦', '❀'] },
-  { id: 'excellence', label: 'מקצועיות', color: '#F26B2A', keys: ['דיוק', 'מדויק', 'לדייק', 'מקצוע', 'איכות', 'מצוינ', 'מצויינ', 'רמה', 'הכי טוב', 'מושלם', 'סטנדרט', 'ברמה', 'מצטיינ', 'להצטיין', 'שלמות'], fl: ['★', '100', '✓'] },
-  { id: 'everychild', label: 'כל ילד', color: '#00B4D8', keys: ['ילד', 'ילדה', 'ילדים', 'ילדות', 'תלמיד', 'קטנים', 'גיל', 'נגיש', 'מתאים', 'לכל אחד', 'לכל אחת', 'עיניים'], fl: ['✦', '♥', '★'] },
-  { id: 'heart', label: 'מהלב', color: '#EE2E5D', keys: ['לב', 'אהבה', 'באהבה', 'אוהב', 'רגש', 'חיבור', 'לחבר', 'מחבר', 'חם', 'חמימות', 'נגיעה', 'לגעת', 'נוגע', 'מרגש', 'נשמה', 'אכפת'], fl: ['♥', '♥', '♥'] },
-  { id: 'staff', label: 'צוות ושירות', color: '#BCCD32', keys: ['צוות', 'מנהל', 'מורה', 'מורות', 'גננת', 'גננות', 'שירות', 'לעזור', 'עזרה', 'שותפ', 'ביחד', 'יחד', 'לשרת', 'להקל', 'זמין', 'מהיר', 'בזמן', 'סבלנות', 'סבלני', 'להקשיב', 'הקשבה', 'לתת'], fl: ['✦', '★', '✓'] },
-  { id: 'parents', label: 'קהילה ומותג', color: '#F26B2A', keys: ['הורים', 'הורה', 'משפח', 'קהיל', 'קהל', 'רישום', 'שיווק', 'למשוך', 'גאווה', 'גאה', 'מותג', 'מיתוג', 'הרשת', 'ייצוג', 'לייצג', 'פנים', 'תדמית', 'אמון', 'רושם'], fl: ['✦', '★', '❀'] },
-  { id: 'pedagogy', label: 'מסר ברור', color: '#4F3A96', keys: ['מסר', 'ברור', 'להסביר', 'הבנה', 'מובן', 'פשוט', 'סדר', 'ארגון', 'קריא', 'מידע', 'תוכן', 'ערך', 'ערכים', 'חינוך', 'חינוכי', 'ללמד', 'להעביר', 'שפה', 'סיפור', 'לספר'], fl: ['א', 'ב', '✦'] },
-  { id: 'science', label: 'חדשנות', color: '#00B4D8', keys: ['חדש', 'חדשנות', 'טכנולוג', 'דיגיטל', 'בינה', 'ai', 'קנבה', 'canva', 'פוטושופ', 'כלים', 'סרטון', 'וידאו', 'אנימצי', 'עתיד', 'קדימה', 'להתקדם', 'לחדש'], fl: ['⚙', 'AI', '✦'] },
-  { id: 'vision', label: 'החזון שלי', color: '#221C4A', keys: [], fl: ['✦', '★', '✧'], sign: [0.1448, 0.0219, 0.7058, 0.1692] },
+  { id: 'joy', label: 'שמחה', color: '#FBB616', keys: ['שמח', 'שמחה', 'חיוך', 'לחייך', 'מחייכ', 'כיף', 'אושר', 'חגיג', 'צהל', 'מצחיק', 'הנאה', 'ליהנות'], fl: ['🎈', '✦', '★'],
+    chars: [...SH('joy'), GAN[0], BC.backpack, NET('girls-jumping'), NET('boys-jumping')] },
+  { id: 'mivtzaim', label: 'שליחות ואור', color: '#A84A9C', keys: ['שליחות', 'שליח', 'להאיר', 'האיר', 'מאיר', 'מאירה', 'אור', 'הרבי', 'קדוש', 'מצו', 'ברכה', 'חסיד', 'גאולה', 'משיח', 'להפיץ', 'הפצה', 'מעיינות', 'תורה', 'יהדות', 'ה\'', 'השם', 'קודש'], fl: ['✦', '★', '✧'],
+    chars: [...SH('mivtzaim'), NET('girl-candles'), NET('boy-tefillin'), GAN[1]] },
+  { id: 'art', label: 'יופי ויצירה', color: '#EE2E5D', keys: ['יפה', 'יופי', 'אסתטי', 'עיצוב', 'לעצב', 'מעצב', 'יצירת', 'יצירה', 'ליצור', 'השראה', 'אמנות', 'אומנות', 'רעיון', 'דמיון', 'צבע', 'צבעוני', 'אסטטי', 'יוצר'], fl: ['🎨', '✦', '❀'],
+    chars: [...SH('art'), BC.idea, NET('girl-painter'), GAN[1]] },
+  { id: 'excellence', label: 'מקצועיות', color: '#F26B2A', keys: ['דיוק', 'מדויק', 'לדייק', 'מקצוע', 'איכות', 'מצוינ', 'מצויינ', 'רמה', 'הכי טוב', 'מושלם', 'סטנדרט', 'ברמה', 'מצטיינ', 'להצטיין', 'שלמות'], fl: ['★', '100', '✓'],
+    chars: [...SH('excellence'), BC.detective, NET('kid-trophy')] },
+  { id: 'everychild', label: 'כל ילד', color: '#00B4D8', keys: ['ילד', 'ילדה', 'ילדים', 'ילדות', 'תלמיד', 'קטנים', 'גיל', 'נגיש', 'מתאים', 'לכל אחד', 'לכל אחת', 'עיניים'], fl: ['✦', '♥', '★'],
+    chars: [...SH('everychild'), GAN[0], BC.backpack, NET('wheelchair-kids')] },
+  { id: 'heart', label: 'מהלב', color: '#EE2E5D', keys: ['לב', 'אהבה', 'באהבה', 'אוהב', 'רגש', 'חיבור', 'לחבר', 'מחבר', 'חם', 'חמימות', 'נגיעה', 'לגעת', 'נוגע', 'מרגש', 'נשמה', 'אכפת'], fl: ['♥', '♥', '♥'],
+    chars: [...SH('heart'), GAN[0], NET('girls-hug'), NET('mom-hug')] },
+  { id: 'staff', label: 'צוות ושירות', color: '#BCCD32', keys: ['צוות', 'מנהל', 'מורה', 'מורות', 'גננת', 'גננות', 'שירות', 'לעזור', 'עזרה', 'שותפ', 'ביחד', 'יחד', 'לשרת', 'להקל', 'זמין', 'מהיר', 'בזמן', 'סבלנות', 'סבלני', 'להקשיב', 'הקשבה', 'לתת'], fl: ['✦', '★', '✓'],
+    chars: [NET('team-meeting'), BC.teacher, ...SH('staff'), NET('principal'), NET('teacher-kids'), GAN[2]] },
+  { id: 'parents', label: 'קהילה ומותג', color: '#F26B2A', keys: ['הורים', 'הורה', 'משפח', 'קהיל', 'קהל', 'רישום', 'שיווק', 'למשוך', 'גאווה', 'גאה', 'מותג', 'מיתוג', 'הרשת', 'ייצוג', 'לייצג', 'פנים', 'תדמית', 'אמון', 'רושם'], fl: ['✦', '★', '❀'],
+    chars: [...SH('parents'), NET('family-mom'), NET('family-dad'), GAN[0]] },
+  { id: 'pedagogy', label: 'מסר ברור', color: '#4F3A96', keys: ['מסר', 'ברור', 'להסביר', 'הבנה', 'מובן', 'פשוט', 'סדר', 'ארגון', 'קריא', 'מידע', 'תוכן', 'ערך', 'ערכים', 'חינוך', 'חינוכי', 'ללמד', 'להעביר', 'שפה', 'סיפור', 'לספר'], fl: ['א', 'ב', '✦'],
+    chars: [BC.teacher, ...SH('pedagogy'), BC.idea, NET('girl-leader')] },
+  { id: 'science', label: 'חדשנות', color: '#00B4D8', keys: ['חדש', 'חדשנות', 'טכנולוג', 'דיגיטל', 'בינה', 'ai', 'קנבה', 'canva', 'פוטושופ', 'כלים', 'סרטון', 'וידאו', 'אנימצי', 'עתיד', 'קדימה', 'להתקדם', 'לחדש'], fl: ['⚙', 'AI', '✦'],
+    chars: [...SH('science'), NET('girl-vr'), NET('boy-tablet'), BC.idea] },
+  { id: 'vision', label: 'החזון שלי', color: '#221C4A', keys: [], fl: ['✦', '★', '✧'],
+    chars: [{ b: 'shg', src: scene('vision'), sign: [0.1448, 0.0219, 0.7058, 0.1692] }, { b: 'shb', src: sceneB('vision'), sign: [0.1083, 0.024, 0.7877, 0.2124] }, GAN[0], BC.backpack, NET('girl-leader')] },
 ];
 const T = Object.fromEntries(TOPICS.map(t => [t.id, t]));
 function classify(text) {
@@ -226,11 +252,21 @@ function classify(text) {
   }
   return best || T.vision;
 }
+// בחירת דמות: מגוונים בין המותגים — מעדיפים סגנון שעוד לא הופיע לאחרונה, ובתוכו תמונה שעוד לא בשימוש
+function pickChar(t, answers) {
+  const recentBrands = answers.slice(-3).map(a => a.brand);
+  const used = new Set(answers.map(a => a.src));
+  const score = c => (recentBrands.includes(c.b) ? 0 : 10) + (used.has(c.src) ? 0 : 5) + (answers.length && answers[answers.length - 1].brand === c.b ? -20 : 0) + Math.random();
+  return [...t.chars].sort((a, b) => score(b) - score(a))[0];
+}
+// פירוק חזרה של תשובה לדמות (נשמר בתשובה עצמה כדי שתמיד תוצג אותה דמות)
+const charOf = a => ({ b: a.brand, src: a.src, sign: a.sign || null });
 
 // ---------- מצב ----------
 const KEY = 'grafika-shlichut-v1';
 let S = { answers: [] };
 try { S = JSON.parse(localStorage.getItem(KEY)) || S; } catch {}
+for (const a of S.answers) if (!a.src) { const c = pickChar(T[a.topic] || T.vision, []); Object.assign(a, { brand: c.b, src: c.src, sign: c.sign || null }); }
 const save = () => localStorage.setItem(KEY, JSON.stringify(S));
 const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 
@@ -248,18 +284,18 @@ for (const [n, x, y, w] of DECO) {
 
 // ---------- הבמה ----------
 const stage = $('#stage');
-function cardSize(n) { return n <= 2 ? 460 : n <= 4 ? 400 : n <= 6 ? 330 : n <= 9 ? 280 : n <= 12 ? 240 : 200; }
+function cardSize(n) { return n <= 2 ? 460 : n <= 4 ? 400 : n <= 6 ? 330 : n <= 8 ? 290 : n <= 12 ? 250 : n <= 15 ? 215 : 185; }
 function signStyle(sign) {
   // השלט באיור "חזון": הטקסט נכתב עליו. המידות יחסיות לתמונה (587×900)
   const [x, y, w, h] = sign;
   return `left:${x * 100}%; top:${y * 100}%; width:${w * 100}%; height:${h * 100}%;`;
 }
 function cardHTML(a) {
-  const t = T[a.topic] || T.vision;
-  const onSign = t.sign && a.text.length <= 26;
-  return `<div class="pic"><img src="${scene(t.id)}" alt="">
-      ${onSign ? `<div class="sign" style="${signStyle(t.sign)}" data-fit>${esc(a.text)}</div>` : ''}
-      <div class="tag">${t.label}</div></div>
+  const t = T[a.topic] || T.vision, c = charOf(a);
+  const onSign = c.sign && a.text.length <= 26;
+  return `<div class="pic"><img src="${c.src}" alt="">
+      ${onSign ? `<div class="sign" data-sign="${c.sign.join(',')}">${esc(a.text)}</div>` : ''}
+      <div class="tag">${t.label}</div><div class="brand">${BRANDS[c.b]?.label || ''}</div></div>
     ${onSign ? '' : `<div class="say">${esc(a.text)}</div>`}
     ${a.name ? `<div class="nm">${esc(a.name)}</div>` : ''}`;
 }
@@ -272,7 +308,7 @@ function fitSigns(root) {
       const r = pic.getBoundingClientRect(), ir = img.getBoundingClientRect();
       if (!ir.width) return;
       const sc = r.width ? r.width / pic.offsetWidth : 1;
-      const [x, y, w, h] = T.vision.sign;
+      const [x, y, w, h] = sign.dataset.sign.split(',').map(Number);
       const left = (ir.left - r.left) / sc + x * ir.width / sc, top = (ir.top - r.top) / sc + y * ir.height / sc;
       Object.assign(sign.style, { left: left + 'px', top: top + 'px', width: w * ir.width / sc + 'px', height: h * ir.height / sc + 'px',
         fontSize: Math.max(12, Math.min(h * ir.height / sc * .55, (w * ir.width / sc) / Math.max(6, sign.textContent.length) * 1.9)) + 'px' });
@@ -297,8 +333,8 @@ function render() {
 
 // ---------- הוספה ----------
 function addAnswer(text, name) {
-  const t = classify(text);
-  const a = { id: Date.now(), text, name, topic: t.id };
+  const t = classify(text), c = pickChar(t, S.answers);
+  const a = { id: Date.now(), text, name, topic: t.id, brand: c.b, src: c.src, sign: c.sign || null };
   S.answers.push(a); save();
   showFocus(a, 6500, () => { render(); hopLast(); });
   burst(t.color); floaters(t);
@@ -313,18 +349,20 @@ function showFocus(a, dur, after) {
   clearTimeout(focusTimer); if (afterFocus) { const g = afterFocus; afterFocus = null; g(); }
   afterFocus = after || null;
   f.style.setProperty('--tc', t.color); f.style.setProperty('--dur', dur + 'ms');
-  const img = $('.hero-wrap img', f); img.src = scene(t.id);
+  const c = charOf(a);
+  const img = $('.hero-wrap img', f); img.src = c.src;
   const sign = $('.hero-wrap .sign', f);
-  const onSign = t.sign && a.text.length <= 26;
+  const onSign = c.sign && a.text.length <= 26;
   sign.textContent = onSign ? a.text : ''; sign.style.display = onSign ? '' : 'none';
   $('.topic', f).textContent = t.label;
+  $('.brandline', f).textContent = BRANDS[c.b]?.label || '';
   $('blockquote', f).textContent = a.text;
   $('.who', f).textContent = a.name || '';
   f.classList.remove('on'); void f.offsetWidth; f.classList.add('on');
   if (onSign) {
     const place = () => {
       const wrap = $('.hero-wrap', f), r = wrap.getBoundingClientRect(), ir = img.getBoundingClientRect(), sc = r.width / wrap.offsetWidth;
-      const [x, y, w, h] = t.sign;
+      const [x, y, w, h] = c.sign;
       Object.assign(sign.style, { left: (ir.left - r.left) / sc + x * ir.width / sc + 'px', top: (ir.top - r.top) / sc + y * ir.height / sc + 'px',
         width: w * ir.width / sc + 'px', height: h * ir.height / sc + 'px', fontSize: Math.min(h * ir.height / sc * .55, (w * ir.width / sc) / Math.max(6, a.text.length) * 1.9) + 'px' });
     };
@@ -392,7 +430,7 @@ addEventListener('keydown', e => {
 app.addEventListener('click', e => { if (e.target.closest('#focus')) closeFocus(); if (e.target.closest('#finale')) $('#finale').classList.remove('on'); });
 
 // טעינה מוקדמת של כל האיורים כדי שיופיעו מיד
-for (const t of TOPICS) new Image().src = scene(t.id);
+for (const t of TOPICS) for (const c of t.chars) new Image().src = c.src;
 render();
 </script>
 </body>
