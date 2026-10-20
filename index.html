@@ -1,0 +1,399 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="icon" href="data:,">
+<title>השליחות שלי — צוות הגרפיקה</title>
+<style>
+  @font-face { font-family: 'Tamlil'; font-weight: 300; src: url('https://ea649.github.io/shalhevet-games/vision/fonts/FbTamlil-Light.otf') format('opentype'); font-display: block; }
+  @font-face { font-family: 'Tamlil'; font-weight: 400; src: url('https://ea649.github.io/shalhevet-games/vision/fonts/FbTamlil-Regular.otf') format('opentype'); font-display: block; }
+  @font-face { font-family: 'Tamlil'; font-weight: 500; src: url('https://ea649.github.io/shalhevet-games/vision/fonts/FbTamlil-Medium.otf') format('opentype'); font-display: block; }
+  @font-face { font-family: 'Tamlil'; font-weight: 700; src: url('https://ea649.github.io/shalhevet-games/vision/fonts/FbTamlil-Bold.otf') format('opentype'); font-display: block; }
+  @font-face { font-family: 'TamlilCond'; font-weight: 900; src: url('https://ea649.github.io/shalhevet-games/vision/fonts/FbTamlilCondensed-Black.otf') format('opentype'); font-display: block; }
+  @font-face { font-family: 'Shirbut'; font-weight: 400; src: url('https://ea649.github.io/shalhevet-games/vision/fonts/FbShirbut-Regular.otf') format('opentype'); font-display: block; }
+
+  :root {
+    --ink: #221C4A; --ink2: rgba(34, 28, 74, .58); --hair: rgba(34, 28, 74, .09);
+    --cyan: #00B4D8; --yellow: #FBB616; --orange: #F26B2A; --pink: #EE2E5D; --lime: #BCCD32; --purple: #A84A9C; --navy: #4F3A96;
+    --spring: cubic-bezier(.18, 1.35, .4, 1);
+    --card: 400px;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; height: 100%; background: #C9E7F3; overflow: hidden; }
+  body { font-family: 'Tamlil', 'Segoe UI', sans-serif; color: var(--ink); direction: rtl; -webkit-font-smoothing: antialiased; user-select: none; }
+
+  #app { position: absolute; left: 50%; top: 50%; width: 1920px; height: 1080px; transform-origin: center; overflow: hidden; translate: -50% -50%; }
+  .bg { position: absolute; inset: 0; background: radial-gradient(110% 85% at 46% 28%, #F5FBFE 0%, #DDF1F9 50%, #C2E3F1 100%); }
+  .grid { position: absolute; inset: 0; background-image: radial-gradient(circle, rgba(0, 105, 150, .17) 1.1px, transparent 1.6px); background-size: 30px 30px;
+    -webkit-mask-image: radial-gradient(70% 62% at 40% 45%, #000 25%, transparent 80%); mask-image: radial-gradient(70% 62% at 40% 45%, #000 25%, transparent 80%); }
+  .bigword { position: absolute; top: 120px; left: 60px; width: 1300px; text-align: center; font: 900 520px/1 'TamlilCond'; color: rgba(34, 28, 74, .035); letter-spacing: -.01em; pointer-events: none; }
+  .floor { position: absolute; left: 0; right: 0; top: 860px; bottom: 0; background: linear-gradient(rgba(20, 110, 150, 0), rgba(20, 110, 150, .08) 40%, rgba(20, 110, 150, .15)); }
+  .vline { position: absolute; top: 40px; bottom: 40px; width: 1px; background: var(--hair); left: 1400px; }
+
+  /* ---------- עמודה ימנית ---------- */
+  .side { position: absolute; right: 60px; top: 70px; width: 440px; z-index: 10; display: flex; flex-direction: column; }
+  .side .logo { width: 250px; align-self: flex-start; margin-bottom: 36px; filter: drop-shadow(0 4px 10px rgba(15, 60, 90, .12)); }
+  .kicker { font: 400 40px/1 'Shirbut'; color: var(--orange); margin-bottom: 8px; }
+  h1.question { margin: 0 0 12px; font: 900 96px/.92 'TamlilCond'; letter-spacing: -.005em; }
+  h1.question span { display: block; }
+  h1.question em { font-style: normal; color: var(--orange); }
+  .sub { font: 400 22px/1.4 'Tamlil'; color: var(--ink2); margin: 10px 0 28px; }
+
+  form { display: flex; flex-direction: column; gap: 10px; }
+  .field { position: relative; }
+  .field label { display: block; font: 500 15px 'Tamlil'; color: var(--ink2); letter-spacing: .05em; margin-bottom: 2px; }
+  .field input { width: 100%; border: 0; border-bottom: 2px solid rgba(0, 90, 130, .22); background: transparent; padding: 8px 2px 10px; font: 400 26px/1.3 'Tamlil'; color: var(--ink);
+    border-radius: 0; outline: none; transition: border-color .2s; direction: rtl; }
+  .field input:focus { border-bottom-color: var(--orange); }
+  .field input::placeholder { color: rgba(34, 28, 74, .3); }
+  .field.name input { font-size: 20px; }
+  .count { position: absolute; left: 0; bottom: -20px; font: 300 12px 'Tamlil'; color: var(--ink2); }
+  button.go { all: unset; box-sizing: border-box; display: flex; align-items: center; justify-content: center; gap: 12px; height: 62px; margin-top: 22px; border-radius: 31px;
+    background: var(--orange); color: #fff; font: 700 24px 'Tamlil'; cursor: pointer; box-shadow: 0 14px 26px -10px rgba(242, 107, 42, .7); transition: transform .15s, opacity .2s; }
+  button.go:active { transform: scale(.98); }
+  button.go svg { width: 26px; height: 26px; }
+  .hint { margin-top: 18px; font: 300 14px/1.6 'Tamlil'; color: var(--ink2); opacity: .8; }
+  .hint kbd { display: inline-block; min-width: 22px; padding: 0 6px; border: 1px solid rgba(34, 28, 74, .25); border-radius: 5px; font: 500 12px/20px 'Tamlil'; text-align: center; margin: 0 2px; }
+
+  /* ---------- מונה ---------- */
+  .counter { position: absolute; right: 60px; bottom: 50px; z-index: 10; display: flex; align-items: baseline; gap: 10px; }
+  .counter b { font: 900 86px/1 'TamlilCond'; color: var(--pink); }
+  .counter span { font: 400 26px 'Shirbut'; color: var(--ink2); }
+
+  /* ---------- הבמה ---------- */
+  #stage { position: absolute; left: 50px; top: 0; width: 1320px; height: 1080px; padding: 110px 30px 90px; z-index: 5; display: flex; flex-wrap: wrap; align-content: center; justify-content: center; gap: 18px 26px; }
+  .card { position: relative; width: var(--card); display: flex; flex-direction: column; align-items: center; cursor: pointer; animation: cardIn .9s var(--spring) both; transition: width .5s; --tc: var(--navy); }
+  .card.gone { animation: cardOut .4s ease-in both; }
+  .card .pic { position: relative; width: 100%; aspect-ratio: 1 / .92; display: flex; align-items: flex-end; justify-content: center; }
+  .card .pic img { max-width: 100%; max-height: 100%; display: block; filter: drop-shadow(0 12px 12px rgba(50, 35, 10, .18)); }
+  .card .pic::after { content: ''; position: absolute; left: 12%; right: 12%; bottom: -8px; height: 30px; z-index: -1;
+    background: radial-gradient(50% 50% at 50% 50%, rgba(60, 40, 10, .28), transparent 70%); }
+  .card .say { margin-top: 10px; max-width: 100%; padding: 6px 18px 8px; background: #fff; border-radius: 22px; box-shadow: 0 8px 18px rgba(15, 60, 90, .12);
+    font: 400 calc(var(--card) * .085) / 1.1 'Shirbut'; color: var(--tc); text-align: center; position: relative; }
+  .card .say::before { content: ''; position: absolute; top: -10px; left: 50%; translate: -50% 0; border: 10px solid transparent; border-top: 0; border-bottom-color: #fff; }
+  .card .nm { margin-top: 6px; font: 500 calc(var(--card) * .045) 'Tamlil'; color: var(--ink2); letter-spacing: .04em; }
+  .card .tag { position: absolute; top: 4%; right: 2%; padding: 3px 12px; border-radius: 20px; background: var(--tc); color: #fff; font: 700 calc(var(--card) * .04) 'Tamlil'; box-shadow: 0 6px 14px rgba(0, 0, 0, .15); }
+  .card.hop img { animation: hop .9s ease-out; }
+  /* הטקסט על השלט של איור "חזון" */
+  .card .sign, .hero-wrap .sign { position: absolute; display: flex; align-items: center; justify-content: center; text-align: center; padding: 1% 3%; font-family: 'Shirbut'; color: var(--ink); line-height: 1.02; overflow: hidden; }
+
+  @keyframes cardIn { 0% { transform: translateY(80px) scale(.3); opacity: 0; } 55% { opacity: 1; } 100% { transform: none; opacity: 1; } }
+  @keyframes cardOut { to { transform: translateY(30px) scale(.5); opacity: 0; } }
+  @keyframes hop { 0%, 100% { transform: translateY(0); } 30% { transform: translateY(-16px); } 55% { transform: translateY(0) scaleY(.97); } 75% { transform: translateY(-4px); } }
+
+  .empty { position: absolute; left: 50px; top: 0; width: 1320px; height: 1080px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; z-index: 4; text-align: center; transition: opacity .5s; pointer-events: none; }
+  .empty.off { opacity: 0; }
+  .empty img { width: 420px; filter: drop-shadow(0 16px 16px rgba(50, 35, 10, .16)); animation: float 4s ease-in-out infinite; }
+  .empty .t { font: 400 44px 'Shirbut'; color: var(--purple); }
+  @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-14px); } }
+
+  /* ---------- שמיים: קישוטים ---------- */
+  #sky { position: absolute; inset: 0; z-index: 2; pointer-events: none; }
+  #sky img { position: absolute; filter: drop-shadow(0 8px 8px rgba(0, 40, 80, .12)); animation: float 5s ease-in-out infinite; }
+  .floater { position: absolute; font: 400 44px 'Shirbut'; color: var(--fc); opacity: 0; animation: floatUp 3.6s ease-out forwards; pointer-events: none; z-index: 30; }
+  @keyframes floatUp { 0% { opacity: 0; transform: translateY(20px) scale(.6) rotate(-8deg); } 15% { opacity: 1; } 100% { opacity: 0; transform: translateY(-260px) scale(1.2) rotate(10deg); } }
+
+  /* ---------- הצגה גדולה ---------- */
+  #focus { position: absolute; inset: 0; z-index: 40; display: none; }
+  #focus.on { display: block; }
+  #focus .veil { position: absolute; inset: 0; background: rgba(221, 241, 249, .92); backdrop-filter: blur(6px); animation: fade .4s both; }
+  .hero-wrap { position: absolute; left: 120px; top: 90px; width: 820px; height: 900px; display: flex; align-items: flex-end; justify-content: center; animation: heroIn 1s var(--spring) both; }
+  .hero-wrap img { max-width: 100%; max-height: 100%; filter: drop-shadow(0 30px 28px rgba(50, 35, 10, .22)); }
+  .hero-wrap::after { content: ''; position: absolute; left: 10%; right: 10%; bottom: -16px; height: 60px; z-index: -1; background: radial-gradient(50% 50% at 50% 50%, rgba(60, 40, 10, .3), transparent 70%); }
+  #focus .copy { position: absolute; right: 120px; top: 50%; translate: 0 -50%; width: 760px; animation: copyIn .9s .15s var(--spring) both; }
+  #focus .kick { font: 400 44px/1 'Shirbut'; color: var(--orange); margin-bottom: 18px; }
+  #focus .topic { display: inline-flex; align-items: center; gap: 10px; padding: 6px 20px; border-radius: 24px; background: var(--tc); color: #fff; font: 700 24px 'Tamlil'; margin-bottom: 26px; }
+  #focus blockquote { margin: 0 0 30px; font: 400 clamp(60px, 10vw, 112px) / 1.02 'Shirbut'; color: var(--ink); position: relative; }
+  #focus blockquote::before { content: '"'; position: absolute; right: -40px; top: -30px; font: 900 180px/1 'TamlilCond'; color: var(--tc); opacity: .25; }
+  #focus .who { font: 900 56px/1 'TamlilCond'; color: var(--tc); }
+  #focus .role { margin-top: 10px; font: 400 24px 'Tamlil'; color: var(--ink2); }
+  #focus .progress { position: absolute; left: 0; right: 0; bottom: 0; height: 8px; background: rgba(34, 28, 74, .08); }
+  #focus .progress i { display: block; height: 100%; width: 0; background: var(--tc); }
+  #focus.on .progress i { animation: prog var(--dur) linear forwards; }
+  @keyframes prog { to { width: 100%; } }
+  @keyframes fade { from { opacity: 0; } }
+  @keyframes heroIn { 0% { transform: translateY(120px) scale(.5); opacity: 0; } 100% { transform: none; opacity: 1; } }
+  @keyframes copyIn { 0% { transform: translateX(-60px); opacity: 0; } 100% { transform: none; opacity: 1; } }
+
+  /* ---------- סיום ---------- */
+  #finale { position: absolute; inset: 0; z-index: 45; display: none; flex-direction: column; align-items: center; justify-content: center; background: rgba(221, 241, 249, .96); }
+  #finale.on { display: flex; animation: fade .6s both; }
+  #finale h2 { margin: 0 0 6px; font: 900 110px/1 'TamlilCond'; color: var(--ink); }
+  #finale h2 em { font-style: normal; color: var(--orange); }
+  #finale .line { font: 400 40px 'Shirbut'; color: var(--purple); margin-bottom: 30px; }
+  #finale .cloud { display: flex; flex-wrap: wrap; justify-content: center; gap: 14px 22px; width: 1600px; }
+  #finale .w { padding: 8px 24px 10px; border-radius: 30px; background: #fff; box-shadow: 0 10px 20px rgba(15, 60, 90, .12); font: 400 var(--fs, 40px) / 1.1 'Shirbut'; color: var(--tc); animation: cardIn .8s var(--spring) both; }
+
+  #confetti { position: absolute; inset: 0; z-index: 50; pointer-events: none; overflow: hidden; }
+  .cf { position: absolute; top: -20px; width: 12px; height: 18px; border-radius: 3px; animation: cfall var(--d) linear forwards; }
+  @keyframes cfall { 0% { transform: translateY(0) rotate(0); opacity: 1; } 100% { transform: translateY(1150px) rotate(720deg); opacity: .6; } }
+
+  #toast { position: absolute; left: 50%; bottom: 30px; translate: -50% 0; padding: 10px 26px; border-radius: 30px; background: var(--ink); color: #fff; font: 500 20px 'Tamlil'; opacity: 0; transition: opacity .3s; z-index: 60; pointer-events: none; }
+  #toast.on { opacity: 1; }
+</style>
+</head>
+<body>
+<div id="app">
+  <div class="bg"></div>
+  <div class="grid"></div>
+  <div class="bigword">שליחות</div>
+  <div class="floor"></div>
+  <div class="vline"></div>
+  <div id="sky"></div>
+
+  <div class="empty" id="empty">
+    <img src="https://ea649.github.io/shalhevet-games/vision/images/web/scenes/joy-g.png" alt="">
+    <div class="t">המסך מחכה לשליחות הראשונה…</div>
+  </div>
+
+  <div id="stage"></div>
+
+  <aside class="side">
+    <img class="logo" src="logo.png" alt="רשת חינוך חב״ד">
+    <div class="kicker">צוות הגרפיקה</div>
+    <h1 class="question"><span>מה השליחות</span><span>שלי<em>?</em></span></h1>
+    <div class="sub">במילה, בשתיים או במשפט — מה את עושה פה באמת?</div>
+    <form id="f" autocomplete="off">
+      <div class="field">
+        <label for="txt">השליחות שלי היא…</label>
+        <input id="txt" maxlength="60" placeholder="לשמח ילדים · לדייק · להאיר…" autofocus>
+        <div class="count" id="cnt">0/60</div>
+      </div>
+      <div class="field name">
+        <label for="nm">שם (לא חובה)</label>
+        <input id="nm" maxlength="20" placeholder="">
+      </div>
+      <button class="go" type="submit"><span>להוסיף למסך</span>
+        <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5"/><path d="M12 5l-7 7 7 7"/></svg></button>
+    </form>
+    <div class="hint"><kbd>Enter</kbd> להוסיף · <kbd>F</kbd> כולן יחד · <kbd>Z</kbd> למחוק את האחרונה · <kbd>Esc</kbd> לסגור</div>
+  </aside>
+
+  <div class="counter"><b id="count">0</b><span>שליחויות</span></div>
+
+  <section id="focus">
+    <div class="veil"></div>
+    <div class="hero-wrap"><img alt=""><div class="sign"></div></div>
+    <div class="copy">
+      <div class="kick">השליחות שלי היא…</div>
+      <div class="topic"></div>
+      <blockquote></blockquote>
+      <div class="who"></div>
+      <div class="role">צוות הגרפיקה · רשת חינוך חב״ד</div>
+    </div>
+    <div class="progress"><i></i></div>
+  </section>
+
+  <section id="finale">
+    <h2>זו <em>השליחות</em> שלנו</h2>
+    <div class="line">צוות הגרפיקה · רשת חינוך חב״ד</div>
+    <div class="cloud"></div>
+  </section>
+
+  <div id="confetti"></div>
+  <div id="toast"></div>
+</div>
+
+<script>
+const $ = (s, el = document) => el.querySelector(s);
+const app = $('#app');
+const IMG = 'https://ea649.github.io/shalhevet-games/vision/images/web/';
+const scene = id => `${IMG}scenes/${id}-g.png`;
+
+// ---------- הנושאים: לכל נושא איור של בנות שלהבות, צבע ומילות מפתח ----------
+const TOPICS = [
+  { id: 'joy', label: 'שמחה', color: '#FBB616', keys: ['שמח', 'שמחה', 'חיוך', 'לחייך', 'מחייכ', 'כיף', 'אושר', 'חגיג', 'צהל', 'מצחיק', 'הנאה', 'ליהנות'], fl: ['🎈', '✦', '★'] },
+  { id: 'mivtzaim', label: 'שליחות ואור', color: '#A84A9C', keys: ['שליחות', 'שליח', 'להאיר', 'האיר', 'מאיר', 'מאירה', 'אור', 'הרבי', 'קדוש', 'מצו', 'ברכה', 'חסיד', 'גאולה', 'משיח', 'להפיץ', 'הפצה', 'מעיינות', 'תורה', 'יהדות', 'ה\'', 'השם', 'קודש'], fl: ['✦', '★', '✧'] },
+  { id: 'art', label: 'יופי ויצירה', color: '#EE2E5D', keys: ['יפה', 'יופי', 'אסתטי', 'עיצוב', 'לעצב', 'מעצב', 'יצירת', 'יצירה', 'ליצור', 'השראה', 'אמנות', 'אומנות', 'רעיון', 'דמיון', 'צבע', 'צבעוני', 'אסטטי', 'יוצר'], fl: ['🎨', '✦', '❀'] },
+  { id: 'excellence', label: 'מקצועיות', color: '#F26B2A', keys: ['דיוק', 'מדויק', 'לדייק', 'מקצוע', 'איכות', 'מצוינ', 'מצויינ', 'רמה', 'הכי טוב', 'מושלם', 'סטנדרט', 'ברמה', 'מצטיינ', 'להצטיין', 'שלמות'], fl: ['★', '100', '✓'] },
+  { id: 'everychild', label: 'כל ילד', color: '#00B4D8', keys: ['ילד', 'ילדה', 'ילדים', 'ילדות', 'תלמיד', 'קטנים', 'גיל', 'נגיש', 'מתאים', 'לכל אחד', 'לכל אחת', 'עיניים'], fl: ['✦', '♥', '★'] },
+  { id: 'heart', label: 'מהלב', color: '#EE2E5D', keys: ['לב', 'אהבה', 'באהבה', 'אוהב', 'רגש', 'חיבור', 'לחבר', 'מחבר', 'חם', 'חמימות', 'נגיעה', 'לגעת', 'נוגע', 'מרגש', 'נשמה', 'אכפת'], fl: ['♥', '♥', '♥'] },
+  { id: 'staff', label: 'צוות ושירות', color: '#BCCD32', keys: ['צוות', 'מנהל', 'מורה', 'מורות', 'גננת', 'גננות', 'שירות', 'לעזור', 'עזרה', 'שותפ', 'ביחד', 'יחד', 'לשרת', 'להקל', 'זמין', 'מהיר', 'בזמן', 'סבלנות', 'סבלני', 'להקשיב', 'הקשבה', 'לתת'], fl: ['✦', '★', '✓'] },
+  { id: 'parents', label: 'קהילה ומותג', color: '#F26B2A', keys: ['הורים', 'הורה', 'משפח', 'קהיל', 'קהל', 'רישום', 'שיווק', 'למשוך', 'גאווה', 'גאה', 'מותג', 'מיתוג', 'הרשת', 'ייצוג', 'לייצג', 'פנים', 'תדמית', 'אמון', 'רושם'], fl: ['✦', '★', '❀'] },
+  { id: 'pedagogy', label: 'מסר ברור', color: '#4F3A96', keys: ['מסר', 'ברור', 'להסביר', 'הבנה', 'מובן', 'פשוט', 'סדר', 'ארגון', 'קריא', 'מידע', 'תוכן', 'ערך', 'ערכים', 'חינוך', 'חינוכי', 'ללמד', 'להעביר', 'שפה', 'סיפור', 'לספר'], fl: ['א', 'ב', '✦'] },
+  { id: 'science', label: 'חדשנות', color: '#00B4D8', keys: ['חדש', 'חדשנות', 'טכנולוג', 'דיגיטל', 'בינה', 'ai', 'קנבה', 'canva', 'פוטושופ', 'כלים', 'סרטון', 'וידאו', 'אנימצי', 'עתיד', 'קדימה', 'להתקדם', 'לחדש'], fl: ['⚙', 'AI', '✦'] },
+  { id: 'vision', label: 'החזון שלי', color: '#221C4A', keys: [], fl: ['✦', '★', '✧'], sign: [0.1448, 0.0219, 0.7058, 0.1692] },
+];
+const T = Object.fromEntries(TOPICS.map(t => [t.id, t]));
+function classify(text) {
+  const s = text.toLowerCase();
+  let best = null, bestScore = 0;
+  for (const t of TOPICS) {
+    let sc = 0;
+    for (const k of t.keys) if (s.includes(k)) sc += k.length >= 4 ? 2 : 1;
+    if (sc > bestScore) { bestScore = sc; best = t; }
+  }
+  return best || T.vision;
+}
+
+// ---------- מצב ----------
+const KEY = 'grafika-shlichut-v1';
+let S = { answers: [] };
+try { S = JSON.parse(localStorage.getItem(KEY)) || S; } catch {}
+const save = () => localStorage.setItem(KEY, JSON.stringify(S));
+const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+
+// ---------- התאמת הקנבס לחלון ----------
+function fit() { app.style.transform = `scale(${Math.min(innerWidth / 1920, innerHeight / 1080)})`; }
+addEventListener('resize', fit); fit();
+
+// ---------- שמיים ----------
+const DECO = [['sun', 40, 30, 120], ['plane', 1180, 40, 150], ['star', 60, 900, 90], ['planet', 1290, 940, 70]];
+for (const [n, x, y, w] of DECO) {
+  const i = document.createElement('img'); i.src = `${IMG}deco/${n}.png`;
+  Object.assign(i.style, { left: x + 'px', top: y + 'px', width: w + 'px', animationDelay: (-Math.random() * 5).toFixed(1) + 's' });
+  $('#sky').append(i);
+}
+
+// ---------- הבמה ----------
+const stage = $('#stage');
+function cardSize(n) { return n <= 2 ? 460 : n <= 4 ? 400 : n <= 6 ? 330 : n <= 9 ? 280 : n <= 12 ? 240 : 200; }
+function signStyle(sign) {
+  // השלט באיור "חזון": הטקסט נכתב עליו. המידות יחסיות לתמונה (587×900)
+  const [x, y, w, h] = sign;
+  return `left:${x * 100}%; top:${y * 100}%; width:${w * 100}%; height:${h * 100}%;`;
+}
+function cardHTML(a) {
+  const t = T[a.topic] || T.vision;
+  const onSign = t.sign && a.text.length <= 26;
+  return `<div class="pic"><img src="${scene(t.id)}" alt="">
+      ${onSign ? `<div class="sign" style="${signStyle(t.sign)}" data-fit>${esc(a.text)}</div>` : ''}
+      <div class="tag">${t.label}</div></div>
+    ${onSign ? '' : `<div class="say">${esc(a.text)}</div>`}
+    ${a.name ? `<div class="nm">${esc(a.name)}</div>` : ''}`;
+}
+function fitSigns(root) {
+  // האיור של "חזון" מצויר על קנבס מרובע עם רקע שקוף; מחשבים איפה התמונה בפועל ומניחים את השלט עליה
+  root.querySelectorAll('.pic').forEach(pic => {
+    const sign = pic.querySelector('.sign'); if (!sign) return;
+    const img = pic.querySelector('img');
+    const place = () => {
+      const r = pic.getBoundingClientRect(), ir = img.getBoundingClientRect();
+      if (!ir.width) return;
+      const sc = r.width ? r.width / pic.offsetWidth : 1;
+      const [x, y, w, h] = T.vision.sign;
+      const left = (ir.left - r.left) / sc + x * ir.width / sc, top = (ir.top - r.top) / sc + y * ir.height / sc;
+      Object.assign(sign.style, { left: left + 'px', top: top + 'px', width: w * ir.width / sc + 'px', height: h * ir.height / sc + 'px',
+        fontSize: Math.max(12, Math.min(h * ir.height / sc * .55, (w * ir.width / sc) / Math.max(6, sign.textContent.length) * 1.9)) + 'px' });
+    };
+    if (img.complete) place(); else img.onload = place;
+  });
+}
+function render() {
+  const n = S.answers.length;
+  document.documentElement.style.setProperty('--card', cardSize(n) + 'px');
+  stage.innerHTML = '';
+  S.answers.forEach((a, i) => {
+    const d = document.createElement('div'); d.className = 'card'; d.style.setProperty('--tc', (T[a.topic] || T.vision).color);
+    d.style.animationDelay = (i * .04) + 's';
+    d.innerHTML = cardHTML(a); d.onclick = () => showFocus(a, 5000);
+    stage.append(d);
+  });
+  fitSigns(stage);
+  $('#count').textContent = n;
+  $('#empty').classList.toggle('off', n > 0);
+}
+
+// ---------- הוספה ----------
+function addAnswer(text, name) {
+  const t = classify(text);
+  const a = { id: Date.now(), text, name, topic: t.id };
+  S.answers.push(a); save();
+  showFocus(a, 6500, () => { render(); hopLast(); });
+  burst(t.color); floaters(t);
+}
+function hopLast() { const c = stage.lastElementChild; if (c) { c.classList.add('hop'); setTimeout(() => c.classList.remove('hop'), 1000); } }
+
+// ---------- הצגה גדולה ----------
+let focusTimer = null, afterFocus = null;
+function showFocus(a, dur, after) {
+  const t = T[a.topic] || T.vision;
+  const f = $('#focus');
+  clearTimeout(focusTimer); if (afterFocus) { const g = afterFocus; afterFocus = null; g(); }
+  afterFocus = after || null;
+  f.style.setProperty('--tc', t.color); f.style.setProperty('--dur', dur + 'ms');
+  const img = $('.hero-wrap img', f); img.src = scene(t.id);
+  const sign = $('.hero-wrap .sign', f);
+  const onSign = t.sign && a.text.length <= 26;
+  sign.textContent = onSign ? a.text : ''; sign.style.display = onSign ? '' : 'none';
+  $('.topic', f).textContent = t.label;
+  $('blockquote', f).textContent = a.text;
+  $('.who', f).textContent = a.name || '';
+  f.classList.remove('on'); void f.offsetWidth; f.classList.add('on');
+  if (onSign) {
+    const place = () => {
+      const wrap = $('.hero-wrap', f), r = wrap.getBoundingClientRect(), ir = img.getBoundingClientRect(), sc = r.width / wrap.offsetWidth;
+      const [x, y, w, h] = t.sign;
+      Object.assign(sign.style, { left: (ir.left - r.left) / sc + x * ir.width / sc + 'px', top: (ir.top - r.top) / sc + y * ir.height / sc + 'px',
+        width: w * ir.width / sc + 'px', height: h * ir.height / sc + 'px', fontSize: Math.min(h * ir.height / sc * .55, (w * ir.width / sc) / Math.max(6, a.text.length) * 1.9) + 'px' });
+    };
+    if (img.complete) requestAnimationFrame(place); else img.onload = place;
+  }
+  focusTimer = setTimeout(closeFocus, dur);
+}
+function closeFocus() {
+  clearTimeout(focusTimer); $('#focus').classList.remove('on');
+  if (afterFocus) { const g = afterFocus; afterFocus = null; g(); }
+}
+
+// ---------- סיום: כל השליחויות יחד ----------
+function toggleFinale() {
+  const f = $('#finale');
+  if (f.classList.contains('on')) { f.classList.remove('on'); return; }
+  closeFocus();
+  const c = $('.cloud', f); c.innerHTML = '';
+  const n = S.answers.length, fs = n <= 6 ? 64 : n <= 12 ? 50 : n <= 20 ? 40 : 32;
+  S.answers.forEach((a, i) => {
+    const w = document.createElement('div'); w.className = 'w'; w.textContent = a.text;
+    w.style.setProperty('--tc', (T[a.topic] || T.vision).color); w.style.setProperty('--fs', fs + 'px'); w.style.animationDelay = i * .08 + 's';
+    c.append(w);
+  });
+  f.classList.add('on'); burst('#F26B2A'); setTimeout(() => burst('#A84A9C'), 600);
+}
+
+// ---------- אפקטים ----------
+function burst(color) {
+  const box = $('#confetti'), cols = [color, '#FBB616', '#00B4D8', '#EE2E5D', '#BCCD32', '#A84A9C'];
+  for (let i = 0; i < 90; i++) {
+    const c = document.createElement('i'); c.className = 'cf';
+    Object.assign(c.style, { left: Math.random() * 1920 + 'px', background: cols[i % cols.length], '--d': (2.2 + Math.random() * 2) + 's', animationDelay: Math.random() * .8 + 's', transform: `rotate(${Math.random() * 360}deg)` });
+    box.append(c); setTimeout(() => c.remove(), 5500);
+  }
+}
+function floaters(t) {
+  for (let i = 0; i < 7; i++) setTimeout(() => {
+    const d = document.createElement('div'); d.className = 'floater'; d.textContent = t.fl[i % t.fl.length];
+    Object.assign(d.style, { left: 100 + Math.random() * 1200 + 'px', top: 300 + Math.random() * 600 + 'px', '--fc': t.color, fontSize: 30 + Math.random() * 40 + 'px' });
+    app.append(d); setTimeout(() => d.remove(), 3800);
+  }, i * 220);
+}
+let toastT;
+function toast(msg) { const t = $('#toast'); t.textContent = msg; t.classList.add('on'); clearTimeout(toastT); toastT = setTimeout(() => t.classList.remove('on'), 2200); }
+
+// ---------- טופס ומקשים ----------
+const txt = $('#txt'), nm = $('#nm');
+txt.addEventListener('input', () => $('#cnt').textContent = `${txt.value.length}/60`);
+$('#f').addEventListener('submit', e => {
+  e.preventDefault();
+  const v = txt.value.trim(); if (!v) { txt.focus(); return; }
+  addAnswer(v, nm.value.trim());
+  txt.value = ''; nm.value = ''; $('#cnt').textContent = '0/60'; txt.focus();
+});
+addEventListener('keydown', e => {
+  const typing = e.target.tagName === 'INPUT' && e.target.value;
+  if (e.key === 'Escape') { closeFocus(); $('#finale').classList.remove('on'); txt.focus(); return; }
+  if (typing) return;
+  const k = e.key.toLowerCase();
+  if (k === 'f' || k === 'כ') { e.preventDefault(); toggleFinale(); }
+  else if (k === 'z' || k === 'ז') { e.preventDefault(); const a = S.answers.pop(); if (a) { save(); render(); toast(`נמחק: "${a.text}"`); } }
+  else if (k === 'r' && e.shiftKey) { if (confirm('למחוק את כל השליחויות מהמסך?')) { S.answers = []; save(); render(); toast('המסך נוקה'); } }
+});
+app.addEventListener('click', e => { if (e.target.closest('#focus')) closeFocus(); if (e.target.closest('#finale')) $('#finale').classList.remove('on'); });
+
+// טעינה מוקדמת של כל האיורים כדי שיופיעו מיד
+for (const t of TOPICS) new Image().src = scene(t.id);
+render();
+</script>
+</body>
+</html>
