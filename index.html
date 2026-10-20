@@ -54,6 +54,7 @@
   button.go:active { transform: scale(.98); }
   button.go svg { width: 26px; height: 26px; }
   .hint { margin-top: 18px; font: 300 14px/1.6 'Tamlil'; color: var(--ink2); opacity: .8; }
+  .mode { margin-top: 8px; font: 400 22px 'Shirbut'; color: var(--purple); min-height: 26px; }
   .hint kbd { display: inline-block; min-width: 22px; padding: 0 6px; border: 1px solid rgba(34, 28, 74, .25); border-radius: 5px; font: 500 12px/20px 'Tamlil'; text-align: center; margin: 0 2px; }
 
   /* ---------- מונה ---------- */
@@ -75,7 +76,18 @@
   .card .nm { margin-top: 6px; font: 500 calc(var(--card) * .045) 'Tamlil'; color: var(--ink2); letter-spacing: .04em; }
   .card .tag { position: absolute; top: 4%; right: 2%; padding: 3px 12px; border-radius: 20px; background: var(--tc); color: #fff; font: 700 calc(var(--card) * .04) 'Tamlil'; box-shadow: 0 6px 14px rgba(0, 0, 0, .15); }
   .card .brand { position: absolute; top: 4%; left: 2%; padding: 3px 10px; border-radius: 20px; background: #fff; color: var(--ink2); font: 500 calc(var(--card) * .034) 'Tamlil'; box-shadow: 0 4px 10px rgba(15, 60, 90, .12); }
-  .card.hop img { animation: hop .9s ease-out; }
+  .card.hop .pic > img { animation: hop .9s ease-out; }
+  /* חפצים לפי הקשר: מרחפים ליד הדמות */
+  .card .pic img.prop { position: absolute; width: 32%; height: auto; max-height: 36%; max-width: 32%; object-fit: contain; z-index: 2; filter: drop-shadow(0 8px 10px rgba(50, 35, 10, .2)); animation: propIn .9s .35s var(--spring) both, float 4s 1.3s ease-in-out infinite; }
+  .card .pic img.prop.p0 { right: -6%; top: 10%; } .card .pic img.prop.p1 { left: -6%; top: 34%; width: 26%; max-width: 26%; }
+  .hero-wrap img.prop { position: absolute; width: 26%; max-width: 26%; z-index: 2; filter: drop-shadow(0 14px 16px rgba(50, 35, 10, .22)); animation: propIn 1s .5s var(--spring) both, float 4s 1.5s ease-in-out infinite; }
+  .hero-wrap img.prop.p0 { right: 4%; top: 14%; } .hero-wrap img.prop.p1 { left: 6%; top: 42%; width: 22%; max-width: 22%; }
+  @keyframes propIn { 0% { transform: scale(0) rotate(-20deg); opacity: 0; } 100% { transform: none; opacity: 1; } }
+  .card .pic.wait > img { opacity: .35; filter: grayscale(.4) blur(1px); }
+  .spin-wrap { position: absolute; left: 50%; top: 50%; translate: -50% -50%; display: flex; flex-direction: column; align-items: center; gap: 8px; font: 400 calc(var(--card) * .09) 'Shirbut'; color: var(--purple); }
+  .spin { width: 34px; height: 34px; border-radius: 50%; border: 4px solid rgba(168, 74, 156, .25); border-top-color: var(--purple); animation: spin .9s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
   /* הטקסט על השלט של איור "חזון" */
   .card .sign, .hero-wrap .sign { position: absolute; display: flex; align-items: center; justify-content: center; text-align: center; padding: 1% 3%; font-family: 'Shirbut'; color: var(--ink); line-height: 1.02; overflow: hidden; }
 
@@ -168,14 +180,15 @@
       <button class="go" type="submit"><span>להוסיף למסך</span>
         <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5"/><path d="M12 5l-7 7 7 7"/></svg></button>
     </form>
-    <div class="hint"><kbd>Enter</kbd> להוסיף · <kbd>F</kbd> כולן יחד · <kbd>Z</kbd> למחוק את האחרונה · <kbd>Esc</kbd> לסגור</div>
+    <div class="hint"><kbd>Enter</kbd> להוסיף · <kbd>F</kbd> כולן יחד · <kbd>Z</kbd> למחוק את האחרונה · <kbd>Esc</kbd> לסגור · <kbd>K</kbd> ציור חי</div>
+    <div class="mode" id="mode"></div>
   </aside>
 
   <div class="counter"><b id="count">0</b><span>שליחויות</span></div>
 
   <section id="focus">
     <div class="veil"></div>
-    <div class="hero-wrap"><img alt=""><div class="sign"></div></div>
+    <div class="hero-wrap"><img alt=""><div class="sign"></div><div class="hero-props"></div></div>
     <div class="copy">
       <div class="kick">השליחות שלי היא…</div>
       <div class="topic"></div>
@@ -262,10 +275,116 @@ function pickChar(t, answers) {
 // פירוק חזרה של תשובה לדמות (נשמר בתשובה עצמה כדי שתמיד תוצג אותה דמות)
 const charOf = a => ({ b: a.brand, src: a.src, sign: a.sign || null });
 
+
+// ---------- חפצים לפי הקשר: מה שנכתב בתשובה מצטרף לאיור ----------
+// כל חפץ: שם הקובץ במאגר האיורים + מילות מפתח. חפץ שמילה שלו מופיעה בטקסט נוסף ליד הדמות (עד 2 חפצים)
+const PROPS = [
+  ['laptop', ['מחשב', 'לפטופ', 'דיגיטל', 'קובץ', 'קבצים', 'תוכנה', 'אילוסטרייטור', 'פוטושופ', 'אינדיזיין', 'קנבה', 'canva', 'מסך', 'אונליין', 'אתר', 'קוד']],
+  ['smartboard', ['מצגת', 'מצגות', 'לוח', 'שקופית', 'הדרכה', 'שיעור', 'כיתה', 'הצגה', 'להציג', 'תצוגה']],
+  ['phone', ['טלפון', 'וואטסאפ', 'ווטסאפ', 'הודעה', 'הודעות', 'סטורי', 'אינסטגרם', 'סושיאל', 'רשתות', 'נייד', 'אפליקצי']],
+  ['video-camera', ['סרטון', 'וידאו', 'סרט', 'צילום', 'לצלם', 'מצלמ', 'קליפ', 'עריכה', 'ריל', 'אנימצי']],
+  ['palette', ['צבע', 'צבעים', 'צבעוני', 'פלטה', 'גוון', 'גוונים', 'לצבוע', 'ציור', 'לצייר', 'מכחול']],
+  ['paint-splash', ['יצירתי', 'יצירתיות', 'השראה', 'מקורי', 'חופש', 'משוגע', 'וואו', 'מרהיב', 'אפקט']],
+  ['giant-pencil', ['עיפרון', 'סקיצה', 'סקיצות', 'לשרטט', 'שרטוט', 'איור', 'לאייר', 'מאייר', 'לכתוב', 'כתיבה', 'טיפוגרפי', 'פונט', 'אותיות', 'גרפיק', 'עיצוב', 'לעצב', 'מעצב']],
+  ['lightbulb', ['רעיון', 'רעיונות', 'חשיבה', 'לחשוב', 'פתרון', 'פתרונות', 'קונספט', 'תובנה', 'הברקה', 'חדש', 'חדשנות', 'לחדש']],
+  ['speech-bubbles', ['מסר', 'מסרים', 'תקשורת', 'שיח', 'להסביר', 'הסבר', 'שפה', 'מילים', 'סיפור', 'לספר', 'להעביר', 'ברור', 'מובן']],
+  ['team-hands', ['צוות', 'ביחד', 'יחד', 'שותפ', 'שיתוף', 'חברות', 'אחדות', 'כולנו', 'קבוצה', 'עזרה', 'לעזור', 'תמיכה']],
+  ['growth-chart', ['צמיחה', 'לצמוח', 'התקדמות', 'להתקדם', 'תוצאות', 'הצלחה', 'להצליח', 'שיפור', 'לשפר', 'יעד', 'יעדים', 'רישום', 'שיווק', 'למשוך']],
+  ['planner', ['זמן', 'בזמן', 'לוח זמנים', 'דדליין', 'תכנון', 'לתכנן', 'סדר', 'ארגון', 'מאורגן', 'מסודר', 'תוכנית', 'שבוע', 'שנה']],
+  ['clock', ['מהר', 'מהיר', 'מהירות', 'דחוף', 'אתמול', 'רגע', 'דקה', 'שעה', 'זמין', 'זמינות']],
+  ['magnifier', ['דיוק', 'מדויק', 'לדייק', 'פרט', 'פרטים', 'פיקסל', 'בדיקה', 'לבדוק', 'הגהה', 'שגיאות', 'טעויות', 'עין', 'עיניים']],
+  ['certificate', ['מקצוע', 'מקצועי', 'מקצועיות', 'איכות', 'איכותי', 'סטנדרט', 'רמה', 'תעודה', 'הכרה']],
+  ['trophy', ['מצוינות', 'מצויינות', 'הכי טוב', 'מושלם', 'אלוף', 'אלופה', 'ניצחון', 'לנצח', 'מצטיינ', 'שלמות']],
+  ['target', ['מטרה', 'מטרות', 'ממוקד', 'מיקוד', 'להתמקד', 'בול', 'קולע', 'לקלוע', 'נכון', 'בדיוק']],
+  ['puzzle', ['פתרון', 'לפתור', 'אתגר', 'אתגרים', 'מורכב', 'להתאים', 'מתאים', 'התאמה', 'חלק', 'חלקים', 'לחבר', 'חיבור']],
+  ['big-heart', ['לב', 'אהבה', 'באהבה', 'אוהב', 'אוהבת', 'רגש', 'חם', 'חמימות', 'נשמה', 'אכפת', 'לגעת', 'נוגע', 'מרגש']],
+  ['house-heart', ['בית', 'משפחה', 'משפחות', 'הורים', 'הורה', 'קהילה', 'קהילתי']],
+  ['balloons', ['שמח', 'שמחה', 'לשמח', 'חגיגה', 'חגיגי', 'מסיבה', 'אירוע', 'אירועים', 'כיף', 'הנאה']],
+  ['party-popper', ['חיוך', 'לחייך', 'מחייכ', 'צחוק', 'מצחיק', 'הפתעה', 'להפתיע', 'וואו', 'התלהבות']],
+  ['rainbow', ['קסם', 'קסום', 'יפה', 'יופי', 'אסתטי', 'אסטטי', 'חלום', 'חלומות', 'מואר', 'צבעוני']],
+  ['star-shine', ['להאיר', 'מאיר', 'מאירה', 'אור', 'זוהר', 'לזהור', 'כוכב', 'לנצנץ', 'מבריק', 'ברק']],
+  ['shabbat-candles', ['שבת', 'נרות', 'נר', 'קדושה', 'קדוש']],
+  ['torah-scroll', ['תורה', 'קודש', 'יהדות', 'חסידות', 'חסידי', 'הרבי', 'רבי', 'מצוה', 'מצווה', 'מצוות', 'משיח', 'גאולה', 'שליחות', 'שליח', 'להפיץ', 'הפצה', 'מעיינות']],
+  ['tzedakah-box', ['צדקה', 'חסד', 'נתינה', 'לתת', 'התנדבות', 'לעזור']],
+  ['book-stack', ['ספר', 'ספרים', 'חוברת', 'חוברות', 'קריאה', 'לקרוא', 'תוכן', 'ידע', 'ללמוד', 'למידה', 'לימוד', 'חינוך', 'חינוכי', 'ערכים', 'ערך']],
+  ['alef-bet', ['אותיות', 'אלף בית', 'קטנים', 'קטנטנים', 'גן', 'מעון', 'תינוק']],
+  ['globe', ['עולם', 'כל העולם', 'גלובלי', 'ארץ', 'ישראל', 'כולם', 'רחוק', 'להגיע', 'סניפים', 'ערים']],
+  ['rocket', ['קדימה', 'להמריא', 'לטוס', 'גבוה', 'שמיים', 'עתיד', 'מהפכה', 'חלל', 'עוצמה', 'דחיפה']],
+  ['ai-chip', ['בינה', 'ai', 'מלאכותית', 'טכנולוג', 'אוטומט', 'רובוט', 'כלים חדשים', 'מתקדם']],
+  ['brain', ['חכם', 'חכמה', 'מוח', 'הבנה', 'להבין', 'ללמוד', 'חשיבה', 'שכל']],
+  ['golden-key', ['מפתח', 'לפתוח', 'הזדמנות', 'דלת', 'דלתות', 'סוד', 'גישה']],
+  ['gift', ['מתנה', 'מתנות', 'להעניק', 'לפנק', 'פינוק', 'הפתעה']],
+  ['microphone', ['קול', 'להשמיע', 'לדבר', 'במה', 'מיקרופון', 'שיר', 'שירה', 'מוזיקה']],
+  ['crown', ['מלכות', 'מלכה', 'מלך', 'כבוד', 'גאווה', 'גאה', 'מותג', 'מיתוג', 'ייצוג', 'לייצג', 'תדמית', 'הרשת']],
+  ['sprout', ['לגדל', 'גידול', 'שורש', 'שורשים', 'לנטוע', 'זרע', 'זרעים', 'להצמיח', 'מצמיח', 'צמיחה']],
+  ['dove', ['שלום', 'שלווה', 'רוגע', 'רגוע', 'בלי לחץ', 'סבלנות', 'סבלני', 'נחת', 'שקט']],
+  ['kind-words', ['מילה טובה', 'מילים טובות', 'תודה', 'הערכה', 'להודות', 'חיזוק', 'לחזק', 'עידוד', 'לעודד']],
+];
+function pickProps(text, max = 2) {
+  const s = text.toLowerCase(), hits = [];
+  for (const [n, kws] of PROPS) { let sc = 0; for (const k of kws) if (s.includes(k)) sc = Math.max(sc, k.length); if (sc) hits.push([n, sc]); }
+  return hits.sort((a, b) => b[1] - a[1]).slice(0, max).map(h => h[0]);
+}
+
+// ---------- ציור חי: עם מפתח Gemini כל תשובה מקבלת איור שנוצר במיוחד, בסגנון המותג ----------
+const GEMKEY = 'grafika-gemini-key';
+const geminiKey = () => localStorage.getItem(GEMKEY) || '';
+const STYLE = {
+  shg: 'photorealistic cut-out of 1–3 cheerful Chabad schoolgirls (ages 7–11): long-sleeved bright solid-colour tops (pink / yellow / cyan / purple / lime) with a small white flower emblem on the chest, knee-length straight denim skirts, dark tights, colourful sneakers. Props are hand-made from painted cardboard. Same lighting and look as the reference photo.',
+  shb: 'photorealistic cut-out of 1–3 cheerful Chabad schoolboys (ages 7–11) wearing dark-blue knitted kippot, bright solid-colour T-shirts with a small white emblem, jeans or beige trousers, colourful sneakers. Props are hand-made from painted cardboard. Same lighting and look as the reference photo.',
+  net: 'photorealistic cut-out of a cheerful Chabad schoolgirl or a warm adult (teacher / parent) in modest dress, as in the reference photo. Props are hand-made from painted cardboard.',
+  bc: 'a 3D animated-film style illustrated character (soft Pixar-like rendering, big expressive eyes, gentle lighting): a girl in a light-blue blouse and navy pleated skirt, or an elegant teacher, exactly like the reference image. Props are 3D rendered in the same style.',
+  gan: 'a hand-made felt / knitted toddler doll character (textile texture, rosy cheeks, button eyes) exactly like the reference image. Props look sewn from felt.',
+};
+async function toB64(url) {
+  const r = await fetch(url); const b = await r.blob();
+  return { mime: b.type || 'image/png', data: await new Promise(res => { const fr = new FileReader(); fr.onload = () => res(fr.result.split(',')[1]); fr.readAsDataURL(b); }) };
+}
+// רקע לבן → שקוף, כדי שהאיור ישב על הבמה כמו שאר הדמויות
+async function whiteToAlpha(b64, mime) {
+  const img = await new Promise((res, rej) => { const i = new Image(); i.onload = () => res(i); i.onerror = rej; i.src = `data:${mime};base64,${b64}`; });
+  const c = document.createElement('canvas'); c.width = img.width; c.height = img.height;
+  const x = c.getContext('2d'); x.drawImage(img, 0, 0);
+  const d = x.getImageData(0, 0, c.width, c.height), px = d.data;
+  for (let i = 0; i < px.length; i += 4) {
+    const mn = Math.min(px[i], px[i + 1], px[i + 2]);
+    if (mn > 248) px[i + 3] = 0; else if (mn > 232) px[i + 3] = Math.round(255 * (248 - mn) / 16);
+  }
+  x.putImageData(d, 0, 0);
+  return await new Promise(res => c.toBlob(res, 'image/png'));
+}
+async function generateImage(a) {
+  const key = geminiKey(); if (!key) throw new Error('no key');
+  const ref = await toB64(a.src);
+  const prompt = `Create ONE new image in the EXACT visual style of the attached reference image. Style: ${STYLE[a.brand] || STYLE.shg}
+The scene must literally and clearly show this personal mission statement of a graphic designer who works for the Chabad school network (the text is in Hebrew): "${a.text}".
+Show the character(s) actively DOING what the sentence says, with props that make the meaning obvious at a glance (for example: designing on a laptop, holding a colour palette, lighting up others, hugging a child, etc.).
+Rules: full figure(s), centred, nothing cropped; plain PURE WHITE background (#FFFFFF) with no shadows on the ground, no scenery; NO text, letters, logos or writing anywhere; happy, warm, wholesome mood; modest dress (long sleeves, skirts for girls); vertical or square composition.`;
+  const body = { contents: [{ parts: [{ text: prompt }, { inline_data: { mime_type: ref.mime, data: ref.data } }] }], generationConfig: { responseModalities: ['IMAGE'] } };
+  const r = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-image:generateContent?key=${encodeURIComponent(key)}`,
+    { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+  if (!r.ok) throw new Error(`Gemini ${r.status}: ${(await r.text()).slice(0, 200)}`);
+  const j = await r.json();
+  const part = j.candidates?.[0]?.content?.parts?.find(p => p.inline_data || p.inlineData);
+  if (!part) throw new Error('no image in response');
+  const id = part.inline_data || part.inlineData;
+  return await whiteToAlpha(id.data, id.mime_type || id.mimeType || 'image/png');
+}
+// שמירת האיורים שנוצרו ב-IndexedDB (גדולים מדי ל-localStorage)
+const idb = new Promise((res, rej) => { const q = indexedDB.open('grafika-gen', 1); q.onupgradeneeded = () => q.result.createObjectStore('img'); q.onsuccess = () => res(q.result); q.onerror = () => rej(q.error); });
+async function idbPut(k, blob) { const db = await idb; return new Promise((res, rej) => { const t = db.transaction('img', 'readwrite'); t.objectStore('img').put(blob, k); t.oncomplete = res; t.onerror = () => rej(t.error); }); }
+async function idbGet(k) { const db = await idb; return new Promise((res, rej) => { const q = db.transaction('img').objectStore('img').get(k); q.onsuccess = () => res(q.result); q.onerror = () => rej(q.error); }); }
+const GEN = new Map(); // id → object URL של האיור שנוצר
+async function loadGenerated() {
+  for (const a of S.answers) if (a.gen && !GEN.has(a.id)) { const b = await idbGet(a.id); if (b) GEN.set(a.id, URL.createObjectURL(b)); }
+}
+const imgOf = a => GEN.get(a.id) || a.src;
+
 // ---------- מצב ----------
 const KEY = 'grafika-shlichut-v1';
 let S = { answers: [] };
 try { S = JSON.parse(localStorage.getItem(KEY)) || S; } catch {}
+for (const a of S.answers) { if (!a.props) a.props = pickProps(a.text); delete a.pending; }
 for (const a of S.answers) if (!a.src) { const c = pickChar(T[a.topic] || T.vision, []); Object.assign(a, { brand: c.b, src: c.src, sign: c.sign || null }); }
 const save = () => localStorage.setItem(KEY, JSON.stringify(S));
 const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
@@ -291,11 +410,14 @@ function signStyle(sign) {
   return `left:${x * 100}%; top:${y * 100}%; width:${w * 100}%; height:${h * 100}%;`;
 }
 function cardHTML(a) {
-  const t = T[a.topic] || T.vision, c = charOf(a);
-  const onSign = c.sign && a.text.length <= 26;
-  return `<div class="pic"><img src="${c.src}" alt="">
+  const t = T[a.topic] || T.vision, c = charOf(a), gen = GEN.has(a.id);
+  const onSign = !gen && c.sign && a.text.length <= 26;
+  const props = gen || a.pending ? [] : (a.props || []);
+  return `<div class="pic${a.pending ? ' wait' : ''}"><img src="${imgOf(a)}" alt="">
       ${onSign ? `<div class="sign" data-sign="${c.sign.join(',')}">${esc(a.text)}</div>` : ''}
-      <div class="tag">${t.label}</div><div class="brand">${BRANDS[c.b]?.label || ''}</div></div>
+      ${props.map((n, i) => `<img class="prop p${i}" src="${item(n)}" alt="">`).join('')}
+      ${a.pending ? '<div class="spin-wrap"><div class="spin"></div><span>מציירים…</span></div>' : ''}
+      <div class="tag">${t.label}</div><div class="brand">${gen ? '✦ ' : ''}${BRANDS[c.b]?.label || ''}</div></div>
     ${onSign ? '' : `<div class="say">${esc(a.text)}</div>`}
     ${a.name ? `<div class="nm">${esc(a.name)}</div>` : ''}`;
 }
@@ -303,7 +425,7 @@ function fitSigns(root) {
   // האיור של "חזון" מצויר על קנבס מרובע עם רקע שקוף; מחשבים איפה התמונה בפועל ומניחים את השלט עליה
   root.querySelectorAll('.pic').forEach(pic => {
     const sign = pic.querySelector('.sign'); if (!sign) return;
-    const img = pic.querySelector('img');
+    const img = pic.querySelector('img:not(.prop)');
     const place = () => {
       const r = pic.getBoundingClientRect(), ir = img.getBoundingClientRect();
       if (!ir.width) return;
@@ -334,10 +456,20 @@ function render() {
 // ---------- הוספה ----------
 function addAnswer(text, name) {
   const t = classify(text), c = pickChar(t, S.answers);
-  const a = { id: Date.now(), text, name, topic: t.id, brand: c.b, src: c.src, sign: c.sign || null };
-  S.answers.push(a); save();
-  showFocus(a, 6500, () => { render(); hopLast(); });
-  burst(t.color); floaters(t);
+  const a = { id: Date.now(), text, name, topic: t.id, brand: c.b, src: c.src, sign: c.sign || null, props: pickProps(text) };
+  S.answers.push(a);
+  if (geminiKey()) {
+    // ציור חי: הכרטיס מופיע מיד עם סימן המתנה, ההצגה הגדולה מגיעה כשהאיור מוכן
+    a.pending = true; save(); render(); hopLast(); toast('מציירים את השליחות…');
+    generateImage(a).then(async blob => {
+      await idbPut(a.id, blob); GEN.set(a.id, URL.createObjectURL(blob)); a.gen = true;
+    }).catch(e => { console.warn(e); toast('הציור לא הצליח, מציגים מהמאגר'); })
+      .finally(() => { delete a.pending; save(); render(); showFocus(a, 6500, () => { render(); hopLast(); }); burst(t.color); floaters(t); });
+  } else {
+    save();
+    showFocus(a, 6500, () => { render(); hopLast(); });
+    burst(t.color); floaters(t);
+  }
 }
 function hopLast() { const c = stage.lastElementChild; if (c) { c.classList.add('hop'); setTimeout(() => c.classList.remove('hop'), 1000); } }
 
@@ -349,13 +481,14 @@ function showFocus(a, dur, after) {
   clearTimeout(focusTimer); if (afterFocus) { const g = afterFocus; afterFocus = null; g(); }
   afterFocus = after || null;
   f.style.setProperty('--tc', t.color); f.style.setProperty('--dur', dur + 'ms');
-  const c = charOf(a);
-  const img = $('.hero-wrap img', f); img.src = c.src;
+  const c = charOf(a), gen = GEN.has(a.id);
+  const img = $('.hero-wrap > img', f); img.src = imgOf(a);
+  const hp = $('.hero-props', f); hp.innerHTML = gen ? '' : (a.props || []).map((n, i) => `<img class="prop p${i}" src="${item(n)}" alt="">`).join('');
   const sign = $('.hero-wrap .sign', f);
-  const onSign = c.sign && a.text.length <= 26;
+  const onSign = !gen && c.sign && a.text.length <= 26;
   sign.textContent = onSign ? a.text : ''; sign.style.display = onSign ? '' : 'none';
   $('.topic', f).textContent = t.label;
-  $('.brandline', f).textContent = BRANDS[c.b]?.label || '';
+  $('.brandline', f).textContent = (gen ? 'צויר במיוחד · ' : '') + (BRANDS[c.b]?.label || '');
   $('blockquote', f).textContent = a.text;
   $('.who', f).textContent = a.name || '';
   f.classList.remove('on'); void f.offsetWidth; f.classList.add('on');
@@ -425,12 +558,23 @@ addEventListener('keydown', e => {
   const k = e.key.toLowerCase();
   if (k === 'f' || k === 'כ') { e.preventDefault(); toggleFinale(); }
   else if (k === 'z' || k === 'ז') { e.preventDefault(); const a = S.answers.pop(); if (a) { save(); render(); toast(`נמחק: "${a.text}"`); } }
+  else if (k === 'k' || k === 'ל') {
+    e.preventDefault();
+    const v = prompt('מפתח Gemini API לציור חי (השאירי ריק כדי לכבות):', geminiKey());
+    if (v === null) return;
+    if (v.trim()) { localStorage.setItem(GEMKEY, v.trim()); toast('ציור חי פועל ✦'); } else { localStorage.removeItem(GEMKEY); toast('ציור חי כבוי — מציגים מהמאגר'); }
+    updateMode();
+  }
   else if (k === 'r' && e.shiftKey) { if (confirm('למחוק את כל השליחויות מהמסך?')) { S.answers = []; save(); render(); toast('המסך נוקה'); } }
 });
 app.addEventListener('click', e => { if (e.target.closest('#focus')) closeFocus(); if (e.target.closest('#finale')) $('#finale').classList.remove('on'); });
 
 // טעינה מוקדמת של כל האיורים כדי שיופיעו מיד
 for (const t of TOPICS) for (const c of t.chars) new Image().src = c.src;
+function updateMode() { $('#mode').textContent = geminiKey() ? '✦ ציור חי פועל' : ''; }
+loadGenerated().then(render); updateMode();
+// מפתח גם דרך הכתובת: ?key=... (נשמר ומוסר מהכתובת)
+{ const u = new URL(location.href); const k = u.searchParams.get('key'); if (k) { localStorage.setItem(GEMKEY, k); u.searchParams.delete('key'); history.replaceState(null, '', u); updateMode(); } }
 render();
 </script>
 </body>
